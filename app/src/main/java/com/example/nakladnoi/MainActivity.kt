@@ -1,12 +1,35 @@
 package com.example.nakladnoi
 
+import android.Manifest
 import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
+import android.app.Activity
+import android.content.ContentValues.TAG
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ImageFormat
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.text.InputType
+import android.provider.Settings
+import android.util.Log
+import android.view.View
+import android.view.View.MeasureSpec
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.view.drawToBitmap
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
@@ -14,6 +37,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val calculate:Button = findViewById(R.id.button)
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (!Settings.canDrawOverlays(this)) {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName"))
+                startActivityForResult(intent, 5678)
+            }
+
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 2);
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_MEDIA_LOCATION)!= PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_MEDIA_LOCATION),4);
 
 
         calculate.setOnClickListener {
@@ -109,5 +148,66 @@ class MainActivity : AppCompatActivity() {
             val itog = findViewById<TextView>(R.id.itog)
                 itog.text = ((sc1+ sc2+ sc3+ sc4+ sc5+ sc6+ sc7+ sc8+ sc9+ sc10+ sc11+ sc12+ sc13+ sc14+ sc15+ sc16)-(so1+so2+so3+so4+so5+so6+so7+so8+so9+so10+so11+so12+so13+so14+so15+so16)).toString()
         }
+
+        val share = findViewById<Button>(R.id.button2)
+        share.setOnClickListener {
+
+            val screen = loadBitmapFromView(this.window.decorView.rootView,this.window.decorView.rootView.width,this.window.decorView.rootView.height)
+            val file = screen?.let { it1 -> saveToCacheMemory(this, it1) }
+            if (screen != null){
+            val sendIntent: Intent = Intent()
+            sendIntent.action = Intent.ACTION_SEND
+            sendIntent.putExtra(Intent.EXTRA_STREAM, file!!.path)
+            sendIntent.type = "image/.jpeg"
+            startActivity(Intent.createChooser(sendIntent, "Поделиться"))}
+        }
+
+    }
+
+    fun saveToCacheMemory(activity: Activity?, bitmapImage: Bitmap): File {
+        val mDateFormat = SimpleDateFormat("yyyyMMddHHmmss", Locale.US)
+        val cw = ContextWrapper(activity)
+        val directory = cw.getDir("imageDir", Context.MODE_PRIVATE)
+        // Create imageDir
+        val mypath = File(directory, mDateFormat.format(Date()) + ImageFormat.JPEG)
+        Log.d(TAG, "directory: $directory")
+        var fos: FileOutputStream? = null
+        try {
+            fos = FileOutputStream(mypath)
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            Log.d(TAG, "bit exception: Success")
+        } catch (e: Exception) {
+            Log.d(TAG, "bit exception: " + e.message)
+            e.printStackTrace()
+        } finally {
+            try {
+                fos!!.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                Log.d(TAG, "io exce: " + e.message)
+            }
+        }
+        Log.d(TAG, "absolute path " + directory.absolutePath)
+        return mypath
+    }
+
+    fun getBitmapFromView(view: View): Bitmap? {
+        view.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
+        val bitmap = Bitmap.createBitmap(
+            view.getMeasuredWidth(), view.getMeasuredHeight(),
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight())
+        view.draw(canvas)
+        return bitmap
+    }
+    fun loadBitmapFromView(v: View, width: Int, height: Int): Bitmap? {
+        val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val c = Canvas(b)
+        v.layout(0, 0, v.layoutParams.width, v.layoutParams.height)
+        v.draw(c)
+        return b
     }
 }
