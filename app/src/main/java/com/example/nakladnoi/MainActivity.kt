@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity() {
             textView1.text = ((sc1+sc2+sc3+sc4+sc5+sc6+sc7+sc8+sc9+sc10+sc11+sc12+sc13+sc14+sc15+sc16).toString())
             println((sc1+sc2+sc3+sc4+sc5+sc6+sc7+sc8+sc9+sc10+sc11+sc12+sc13+sc14+sc15+sc16).toString())
             val itog = findViewById<TextView>(R.id.itog)
-                itog.text = (so1+so2+so3+so4+so5+so6+so7+so8+so9+so10+so11+so12+so13+so14+so15+so16+sc1+ sc2+ sc3+ sc4+ sc5+ sc6+ sc7+ sc8+ sc9+ sc10+ sc11+ sc12+ sc13+ sc14+ sc15+ sc16).toString()
+                itog.text = ((sc1+ sc2+ sc3+ sc4+ sc5+ sc6+ sc7+ sc8+ sc9+ sc10+ sc11+ sc12+ sc13+ sc14+ sc15+ sc16)-(so1+so2+so3+so4+so5+so6+so7+so8+so9+so10+so11+so12+so13+so14+so15+so16)).toString()
         }
     }
 }
