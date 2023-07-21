@@ -1,1 +1,1 @@
-![Uploading image.png…]()
+[![Uploading image.png…]()](https://github.com/kuralovsa/Nakladnoi/blob/main/app/src/main/res/drawable/planirovshik.png?raw=true)https://github.com/kuralovsa/Nakladnoi/blob/main/app/src/main/res/drawable/planirovshik.png?raw=true
